@@ -1,7 +1,14 @@
 [package]
 name = "mergeme_derive"
 version = "0.1.0"
+authors = ["BD103"]
 edition = "2024"
+description = "A derivable trait that assists with merging data together"
+readme = "../README.md"
+repository = "https://github.com/BD103/mergeme"
+license = "MIT OR Apache-2.0"
+keywords = ["no_std", "derive", "config"]
+categories = ["config", "no-std", "no-std::no-alloc"]
 
 [lib]
 proc-macro = true
