@@ -1,0 +1,11 @@
+[package]
+name = "mergeme"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = ["derive"]
+derive = ["dep:mergeme_derive"]
+
+[dependencies]
+mergeme_derive = { path = "../mergeme_derive", version = "0.1.0", optional = true }
