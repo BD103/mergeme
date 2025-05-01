@@ -1,3 +1,5 @@
+#![no_std]
+
 #[cfg(feature = "derive")]
 pub use mergeme_derive::Merge;
 
