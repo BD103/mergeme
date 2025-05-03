@@ -5,6 +5,79 @@ use syn::{
     spanned::Spanned,
 };
 
+/// Automatically implements `Merge` for a given structure.
+/// 
+/// This derive will create a near-identical partial version of the structure with each field being
+/// optional. For example:
+/// 
+/// ```
+/// # use mergeme_derive::Merge;
+/// #
+/// // Deriving `Merge` on this struct...
+/// #[derive(Merge)]
+/// #[partial(PartialConfig)]
+/// struct Config {
+///     name: String,
+///     version: u32,
+///     dependencies: Vec<String>,
+/// }
+/// ```
+/// 
+/// ```
+/// // ...will create this struct as well.
+/// struct PartialConfig {
+///     name: Option<String>,
+///     version: Option<u32>,
+///     dependencies: Option<Vec<String>>,
+/// }
+/// ```
+/// 
+/// # Attributes
+/// 
+/// - `#[partial(Name)]`
+///
+///   *What*: This specifies the name of the partial struct generated.
+/// 
+///   *Where*: This should annotate the struct itself.
+/// 
+///   *How*: The name should be a single identifier inside the parenthesis, and is commonly prefixed
+///   with "Partial".
+/// 
+///   *Required*
+/// 
+/// - `#[strategy(overwrite | merge)]`
+/// 
+///   *What*: This specifies how this field should be merged.
+/// 
+///   *Where*: This should annotate the struct's fields.
+/// 
+///   *How*: The value should either be `overwrite` or `merge` in parenthesis. `overwrite` will
+///   replace the base's field with the partial's if it exists, while `merge` will use the field
+///   type's `Merge` implementation to combine the two values together.
+/// 
+///   *Optional*: Fields without this attribute default to `overwrite`.
+/// 
+/// # Examples
+/// 
+/// ```
+/// # use mergeme_derive::Merge;
+/// #
+/// #[derive(Merge)]
+/// // Name the partial version of this type `PartialConfig`.
+/// #[partial(PartialConfig)]
+/// struct Config {
+///     // This field will be overwritten when merged. `#[strategy(overwrite)]` may be omitted.
+///     #[strategy(overwrite)]
+///     name: String,
+/// 
+///     // This field will also be overwritten when merged.
+///     version: u32,
+/// 
+///     // This field will be combined when merged.
+///     #[strategy(merge)]
+///     dependencies: Vec<String>,
+/// }
+/// ```
 #[proc_macro_derive(Merge, attributes(partial, strategy))]
 pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
