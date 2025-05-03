@@ -1,5 +1,5 @@
 use proc_macro2::{Ident, TokenStream};
-use quote::{quote, quote_spanned, ToTokens};
+use quote::{ToTokens, quote, quote_spanned};
 use syn::{
     Data, DataEnum, DataUnion, DeriveInput, Error, Field, Fields, Result, parse_macro_input,
     spanned::Spanned,
@@ -87,9 +87,9 @@ fn partial_fields(fields: &Fields) -> TokenStream {
             ty,
         } = field;
 
-        let filtered_attrs = attrs.iter().filter(|attr| {
-            !attr.path().is_ident("strategy")
-        });
+        let filtered_attrs = attrs
+            .iter()
+            .filter(|attr| !attr.path().is_ident("strategy"));
 
         let partial_ty = quote_spanned!(ty.span()=> ::core::option::Option<#ty>);
 
@@ -135,7 +135,10 @@ fn merge_in_place(fields: &Fields) -> Result<TokenStream> {
         }
 
         let Some(ref field_name) = field.ident else {
-            return Err(Error::new(field.span(), "`#[derive(Merge)]` does not support tuple `struct`s"));
+            return Err(Error::new(
+                field.span(),
+                "`#[derive(Merge)]` does not support tuple `struct`s",
+            ));
         };
 
         let merge = match strategy {
