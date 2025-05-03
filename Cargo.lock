@@ -13,6 +13,7 @@ dependencies = [
 name = "mergeme_derive"
 version = "0.1.0"
 dependencies = [
+ "mergeme",
  "proc-macro2",
  "quote",
  "syn",

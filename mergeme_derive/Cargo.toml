@@ -14,6 +14,15 @@ categories = ["config", "no-std", "no-std::no-alloc"]
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "1.0.95"
-quote = "1.0.40"
+# Parses token streams into syntax trees.
 syn = "2.0.101"
+
+# Generates token streams from code.
+quote = "1.0.40"
+
+# Used for interoperability between `proc_macro`, `syn`, and `quote.
+proc-macro2 = "1.0.95"
+
+[dev-dependencies]
+# Used in doc tests.
+mergeme = { path = "../mergeme" }
