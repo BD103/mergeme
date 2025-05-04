@@ -105,15 +105,73 @@ pub use mergeme_derive::Merge;
 /// assert_eq!(merged.friends, ["Lou", "Kylie"]);
 /// ```
 pub trait Merge<Partial>: Sized {
+    /// Merges `Self` and `Partial` together, mutating `Self` in place.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// # use mergeme::Merge;
+    /// #
+    /// #[derive(Merge)]
+    /// #[partial(PartialCat)]
+    /// struct Cat {
+    ///     name: String,
+    ///     age: u16,
+    /// }
+    /// 
+    /// let mut whiskers = Cat {
+    ///     name: "Whiskers".to_string(),
+    ///     age: 4,
+    /// };
+    /// 
+    /// let partial = PartialCat {
+    ///     name: None,
+    ///     age: Some(5),
+    /// };
+    /// 
+    /// whiskers.merge_in_place(partial);
+    /// 
+    /// assert_eq!(whiskers.name, "Whiskers");
+    /// assert_eq!(whiskers.age, 5);
+    /// ```
     fn merge_in_place(&mut self, other: Partial);
 
+    /// Merges `Self` and `Partial` together, returning a new `Self`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// # use mergeme::Merge;
+    /// #
+    /// #[derive(Merge)]
+    /// #[partial(PartialCat)]
+    /// struct Cat {
+    ///     name: String,
+    ///     age: u16,
+    /// }
+    /// 
+    /// let mut whiskers = Cat {
+    ///     name: "Whiskers".to_string(),
+    ///     age: 4,
+    /// };
+    /// 
+    /// let partial = PartialCat {
+    ///     name: Some("Toast".to_string()),
+    ///     age: None,
+    /// };
+    /// 
+    /// let toast = whiskers.merge(partial);
+    /// 
+    /// assert_eq!(toast.name, "Toast");
+    /// assert_eq!(toast.age, 4);
+    /// ```
     fn merge(mut self, other: Partial) -> Self {
         self.merge_in_place(other);
         self
     }
 }
 
-/// Implements `Merge` for any type that implements `Extend`.
+/// Implements [`Merge`] for any type that implements [`Extend`].
 ///
 /// This means that most standard library collection types can be merged with anything iterable over
 /// the same type. Some highlights include:
