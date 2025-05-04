@@ -106,9 +106,9 @@ pub use mergeme_derive::Merge;
 /// ```
 pub trait Merge<Partial>: Sized {
     /// Merges `Self` and `Partial` together, mutating `Self` in place.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// # use mergeme::Merge;
     /// #
@@ -118,28 +118,28 @@ pub trait Merge<Partial>: Sized {
     ///     name: String,
     ///     age: u16,
     /// }
-    /// 
+    ///
     /// let mut whiskers = Cat {
     ///     name: "Whiskers".to_string(),
     ///     age: 4,
     /// };
-    /// 
+    ///
     /// let partial = PartialCat {
     ///     name: None,
     ///     age: Some(5),
     /// };
-    /// 
+    ///
     /// whiskers.merge_in_place(partial);
-    /// 
+    ///
     /// assert_eq!(whiskers.name, "Whiskers");
     /// assert_eq!(whiskers.age, 5);
     /// ```
     fn merge_in_place(&mut self, other: Partial);
 
     /// Merges `Self` and `Partial` together, returning a new `Self`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// # use mergeme::Merge;
     /// #
@@ -149,19 +149,19 @@ pub trait Merge<Partial>: Sized {
     ///     name: String,
     ///     age: u16,
     /// }
-    /// 
+    ///
     /// let mut whiskers = Cat {
     ///     name: "Whiskers".to_string(),
     ///     age: 4,
     /// };
-    /// 
+    ///
     /// let partial = PartialCat {
     ///     name: Some("Toast".to_string()),
     ///     age: None,
     /// };
-    /// 
+    ///
     /// let toast = whiskers.merge(partial);
-    /// 
+    ///
     /// assert_eq!(toast.name, "Toast");
     /// assert_eq!(toast.age, 4);
     /// ```
