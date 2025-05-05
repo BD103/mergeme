@@ -1,0 +1,5 @@
+error: `#[derive(Merge)]` only works on `struct`s, not `union`s
+ --> tests/ui/fail/incorrect_item/union.rs:5:1
+  |
+5 | union Choice {
+  | ^^^^^

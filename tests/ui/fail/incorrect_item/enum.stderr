@@ -1,0 +1,5 @@
+error: `#[derive(Merge)]` only works on `struct`s, not `enum`s
+ --> tests/ui/fail/incorrect_item/enum.rs:5:1
+  |
+5 | enum Choice {
+  | ^^^^

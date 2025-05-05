@@ -1,0 +1,5 @@
+error: expected `#[strategy(overwrite)]` or `#[strategy(merge)]`
+ --> tests/ui/fail/strategy/unknown_strategy.rs:8:16
+  |
+8 |     #[strategy(add)]
+  |                ^^^

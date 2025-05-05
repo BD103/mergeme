@@ -1,0 +1,5 @@
+error: `#[derive(Merge)]` does not support tuple `struct`s
+ --> tests/ui/fail/incorrect_item/tuple_struct.rs:5:15
+  |
+5 | struct Config(bool, u8, Vec<String>);
+  |               ^^^^

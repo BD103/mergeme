@@ -1,0 +1,5 @@
+error: expected `#[partial(...)]`
+ --> tests/ui/fail/partial/incorrect_partial.rs:4:1
+  |
+4 | struct Config {
+  | ^^^^^^
