@@ -253,7 +253,7 @@ fn partial_name(input: &DeriveInput) -> Result<Ident> {
 fn partial_fields(fields: &Fields) -> TokenStream {
     let partial_fields = fields.iter().map(|field| {
         let Field {
-            attrs,
+            attrs: _,
             vis,
             mutability: _,
             ident,
@@ -261,14 +261,9 @@ fn partial_fields(fields: &Fields) -> TokenStream {
             ty,
         } = field;
 
-        let filtered_attrs = attrs
-            .iter()
-            .filter(|attr| !attr.path().is_ident("strategy"));
-
         let partial_ty = quote_spanned!(ty.span()=> ::core::option::Option<#ty>);
 
         quote_spanned! {field.span()=>
-            #(#filtered_attrs)*
             #vis #ident #colon_token #partial_ty
         }
     });
