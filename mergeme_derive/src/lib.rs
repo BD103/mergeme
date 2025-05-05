@@ -186,6 +186,13 @@ use syn::{
 pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
+    match derive_merge_inner(input) {
+        Ok(stream) => stream.into(),
+        Err(error) => error.to_compile_error().into(),
+    }
+}
+
+fn derive_merge_inner(input: DeriveInput) -> Result<TokenStream> {
     let struct_name = &input.ident;
     let struct_vis = &input.vis;
     let struct_generics = &input.generics;
@@ -194,34 +201,25 @@ pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let struct_fields = match &input.data {
         Data::Struct(data_struct) => &data_struct.fields,
         Data::Enum(DataEnum { enum_token, .. }) => {
-            return Error::new(
+            return Err(Error::new(
                 enum_token.span,
                 "`#[derive(Merge)]` only works on `struct`s, not `enum`s",
-            )
-            .to_compile_error()
-            .into();
+            ));
         }
         Data::Union(DataUnion { union_token, .. }) => {
-            return Error::new(
+            return Err(Error::new(
                 union_token.span,
                 "`#[derive(Merge)]` only works on `struct`s, not `union`s",
-            )
-            .to_compile_error()
-            .into();
+            ));
         }
     };
 
-    let (partial_name, partial_meta) = match partial_name_and_meta(&input) {
-        Ok((name, meta)) => (name, meta.into_iter()),
-        Err(error) => return error.to_compile_error().into(),
-    };
+    let (partial_name, partial_meta) =
+        partial_name_and_meta(&input).map(|(name, meta)| (name, meta.into_iter()))?;
 
     let partial_fields = partial_fields(struct_fields);
 
-    let merge_in_place = match merge_in_place(struct_fields) {
-        Ok(merge_in_place) => merge_in_place,
-        Err(error) => return error.to_compile_error().into(),
-    };
+    let merge_in_place = merge_in_place(struct_fields)?;
 
     let output = quote! {
         impl #impl_generics ::mergeme::Merge<#partial_name #ty_generics> for #struct_name #ty_generics #where_clause {
@@ -236,7 +234,7 @@ pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         }
     };
 
-    output.into()
+    Ok(output)
 }
 
 fn partial_name_and_meta(input: &DeriveInput) -> Result<(Ident, Punctuated<Meta, Token![,]>)> {
