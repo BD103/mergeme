@@ -203,13 +203,13 @@ fn derive_merge_inner(input: DeriveInput) -> Result<TokenStream> {
         Data::Enum(DataEnum { enum_token, .. }) => {
             return Err(Error::new(
                 enum_token.span,
-                "`#[derive(Merge)]` only works on `struct`s, not `enum`s",
+                "`#[derive(Merge)]` only works on structs, not enums",
             ));
         }
         Data::Union(DataUnion { union_token, .. }) => {
             return Err(Error::new(
                 union_token.span,
-                "`#[derive(Merge)]` only works on `struct`s, not `union`s",
+                "`#[derive(Merge)]` only works on structs, not unions",
             ));
         }
     };
