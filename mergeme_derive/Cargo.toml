@@ -1,6 +1,6 @@
 [package]
 name = "mergeme_derive"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["BD103"]
 edition = "2024"
 description = "A derivable trait that assists with merging data together"
