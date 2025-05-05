@@ -47,6 +47,7 @@ name = "mergeme"
 version = "0.2.0"
 dependencies = [
  "mergeme_derive",
+ "serde",
  "trybuild",
 ]
 
