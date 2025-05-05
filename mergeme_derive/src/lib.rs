@@ -1,7 +1,10 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
-    Data, DataEnum, DataUnion, DeriveInput, Error, Field, Fields, Result, parse_macro_input,
+    Data, DataEnum, DataUnion, DeriveInput, Error, Field, Fields, Meta, Result, Token,
+    parse::{Parse, ParseStream},
+    parse_macro_input,
+    punctuated::Punctuated,
     spanned::Spanned,
 };
 
@@ -208,8 +211,8 @@ pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         }
     };
 
-    let partial_name = match partial_name(&input) {
-        Ok(struct_config) => struct_config,
+    let (partial_name, partial_meta) = match partial_name_and_meta(&input) {
+        Ok((name, meta)) => (name, meta.into_iter()),
         Err(error) => return error.to_compile_error().into(),
     };
 
@@ -227,6 +230,7 @@ pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             }
         }
 
+        #(#[#partial_meta])*
         #struct_vis struct #partial_name #struct_generics #where_clause {
             #partial_fields
         }
@@ -235,19 +239,29 @@ pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     output.into()
 }
 
-fn partial_name(input: &DeriveInput) -> Result<Ident> {
-    let mut partial: Option<Ident> = None;
+fn partial_name_and_meta(input: &DeriveInput) -> Result<(Ident, Punctuated<Meta, Token![,]>)> {
+    let mut name: Option<Ident> = None;
+    let mut meta: Punctuated<Meta, Token![,]> = Punctuated::new();
 
     for attr in input.attrs.iter() {
         if attr.path().is_ident("partial") {
-            attr.parse_nested_meta(|meta| {
-                partial = Some(meta.path.require_ident()?.clone());
+            attr.parse_args_with(|input: ParseStream<'_>| {
+                name = Some(input.parse()?);
+
+                if input.parse::<Token![,]>().is_ok() {
+                    let punctuated = input.parse_terminated(Meta::parse, Token![,])?;
+                    meta.extend(punctuated.into_pairs());
+                }
+
                 Ok(())
             })?;
         }
     }
 
-    partial.ok_or_else(|| Error::new(input.span(), "expected `#[partial(...)]`"))
+    match name {
+        Some(name) => Ok((name, meta)),
+        None => Err(Error::new(input.span(), "expected `#[partial(...)]`")),
+    }
 }
 
 fn partial_fields(fields: &Fields) -> TokenStream {
