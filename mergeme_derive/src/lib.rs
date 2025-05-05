@@ -217,7 +217,7 @@ fn derive_merge_inner(input: DeriveInput) -> Result<TokenStream> {
     let (partial_name, partial_meta) =
         partial_name_and_meta(&input).map(|(name, meta)| (name, meta.into_iter()))?;
 
-    let partial_fields = partial_fields(struct_fields);
+    let partial_fields = partial_fields(struct_fields)?;
 
     let merge_in_place = merge_in_place(struct_fields)?;
 
@@ -262,10 +262,12 @@ fn partial_name_and_meta(input: &DeriveInput) -> Result<(Ident, Punctuated<Meta,
     }
 }
 
-fn partial_fields(fields: &Fields) -> TokenStream {
-    let partial_fields = fields.iter().map(|field| {
+fn partial_fields(fields: &Fields) -> Result<TokenStream> {
+    let mut stream = TokenStream::new();
+
+    for field in fields {
         let Field {
-            attrs: _,
+            attrs,
             vis,
             mutability: _,
             ident,
@@ -273,14 +275,32 @@ fn partial_fields(fields: &Fields) -> TokenStream {
             ty,
         } = field;
 
+        let mut field_meta: Punctuated<Meta, Token![,]> = Punctuated::new();
+
+        for attr in attrs {
+            if attr.path().is_ident("partial") {
+                attr.parse_args_with(|input: ParseStream<'_>| {
+                    let punctuated = input.parse_terminated(Meta::parse, Token![,])?;
+                    field_meta.extend(punctuated);
+
+                    Ok(())
+                })?;
+            }
+        }
+
+        let field_meta = field_meta.into_iter();
+
         let partial_ty = quote_spanned!(ty.span()=> ::core::option::Option<#ty>);
 
-        quote_spanned! {field.span()=>
-            #vis #ident #colon_token #partial_ty
-        }
-    });
+        let field = quote_spanned! {field.span()=>
+            #(#[#field_meta])*
+            #vis #ident #colon_token #partial_ty,
+        };
 
-    quote_spanned!(fields.span()=> #(#partial_fields),*)
+        stream.extend(field);
+    }
+
+    Ok(stream)
 }
 
 fn merge_in_place(fields: &Fields) -> Result<TokenStream> {
