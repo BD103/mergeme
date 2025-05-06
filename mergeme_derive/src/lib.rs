@@ -37,18 +37,31 @@ use syn::{
 ///
 /// # Attributes
 ///
-/// - `#[partial(Name)]`
+/// - `#[partial(Name)]`, `#[partial(Name, ...)]` (struct)
 ///
-///   *What*: This specifies the name of the partial struct generated.
+///   *What*: This specifies the name of the partial struct generated, as well as any attributes
+///   that should be applied to the partial struct.
 ///
 ///   *Where*: This should annotate the struct itself.
 ///
-///   *How*: The name should be a single identifier inside the parenthesis, and is commonly prefixed
-///   with "Partial".
+///   *How*: The name should be a single identifier inside the parenthesis, and is commonly
+///   prefixed with "Partial". Attributes to be applied to the partial struct may optionally be
+///   specified after name, separated by commas.
 ///
 ///   *Required*
 ///
-/// - `#[strategy(overwrite | merge)]`
+/// - `#[partial(...)]` (field)
+///
+///   *What*: This specifies attributes that should annotate fields within the partial struct.
+///
+///   *Where*: This should annotate fields within the struct.
+///
+///   *How*: This accepts a comma-separated list of attributes to be applied to the partial's field
+///   inside the parenthesis. At least one attribute is required.
+///
+///   *Optional*
+///
+/// - `#[strategy(overwrite | merge)]` (field)
 ///
 ///   *What*: This specifies how this field should be merged.
 ///
@@ -80,6 +93,82 @@ use syn::{
 ///     #[strategy(merge)]
 ///     dependencies: Vec<String>,
 /// }
+/// ```
+///
+/// Struct and field attributes can be applied to the partial struct using the `#[partial(...)]`
+/// attribute. This is commonly used to implement `Default` for the partial struct, as its fields
+/// are all `Option<T>`s.
+///
+/// ```
+/// # use mergeme_derive::Merge;
+/// #
+/// #[derive(Merge)]
+/// // Implement `Default` for the partial struct.
+/// #[partial(PartialFish, derive(Default))]
+/// struct Fish {
+///     fins: u8,
+///     memory: f32,
+///     leashed: bool,
+/// }
+/// #
+/// # let partial_fish = PartialFish::default();
+/// #
+/// # assert!(partial_fish.fins.is_none());
+/// # assert!(partial_fish.memory.is_none());
+/// # assert!(partial_fish.leashed.is_none());
+/// ```
+///
+/// ```
+/// # use mergeme_derive::Merge;
+/// # use serde::Deserialize;
+/// #
+/// #[derive(Merge)]
+/// // Implement `Deserialize` for the partial struct, denying unknown fields.
+/// #[partial(PartialConfig, derive(Deserialize), serde(deny_unknown_fields))]
+/// struct Config {
+///     name: String,
+///
+///     // When deserializing the partial struct, accept the value of either "version" or "v" for
+///     // this field.
+///     #[partial(serde(alias = "v"))]
+///     version: u32,
+/// }
+/// ```
+///
+/// Be warned that the fields of partial structs are all `Option<T>`s. This may make certain
+/// attributes like `#[serde(default)]` behave differently.
+///
+/// ```
+/// # use mergeme::Merge;
+/// # use serde::Deserialize;
+/// #
+/// #[derive(Merge)]
+/// #[partial(PartialTrickyDefault, derive(Deserialize))]
+/// struct TrickyDefault {
+///     // This attribute actually gets applied to a field like `value: Option<u64>`. Because of
+///     // this, the default value will be `None` and not 0.
+///     #[partial(serde(default))]
+///     tricky_value: u64,
+///
+///     // This fixes the issue by making the partial field default to `Some(0)`. Much better!
+///     #[partial(serde(default = "zero_default"))]
+///     corrected_value: u64,
+/// }
+///
+/// fn zero_default() -> Option<u64> {
+///     Some(0)
+/// }
+/// #
+/// # use std::collections::HashMap;
+/// # use serde::de::{IntoDeserializer, value::{Error, MapDeserializer}};
+/// #
+/// # // Deserialize an empty hash map, forcing the default values to be used.
+/// # let map: HashMap<&'static str, u64> = HashMap::new();
+/// # let deserializer: MapDeserializer<'_, _, Error> = map.into_deserializer();
+/// # let partial_tricky = PartialTrickyDefault::deserialize(deserializer).unwrap();
+/// #
+/// # assert!(partial_tricky.tricky_value.is_none());
+/// # assert_eq!(partial_tricky.corrected_value, Some(0));
 /// ```
 ///
 /// Simple generics are supported, however only generic types that can merge with themselves can

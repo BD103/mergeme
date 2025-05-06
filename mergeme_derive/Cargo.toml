@@ -32,3 +32,6 @@ proc-macro2 = "1.0.95"
 [dev-dependencies]
 # Used in doc tests.
 mergeme = { path = "../" }
+
+# Used to verify compatibility with common (de)serialization crate.
+serde = { version = "1.0.219", features = ["derive"] }

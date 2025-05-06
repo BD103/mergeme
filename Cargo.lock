@@ -58,6 +58,7 @@ dependencies = [
  "mergeme",
  "proc-macro2",
  "quote",
+ "serde",
  "syn",
 ]
 
