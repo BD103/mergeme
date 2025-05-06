@@ -1,5 +1,6 @@
-error: `#[derive(Merge)]` does not support tuple `struct`s
- --> tests/ui/fail/incorrect_item/tuple_struct.rs:5:15
+error: `#[derive(Merge)]` only works on named structs, not tuple structs
+ --> tests/ui/fail/incorrect_item/tuple_struct.rs:4:1
   |
-5 | struct Config(bool, u8, Vec<String>);
-  |               ^^^^
+4 | / #[partial(PartialConfig)]
+5 | | struct Config(bool, u8, Vec<String>);
+  | |_____________________________________^

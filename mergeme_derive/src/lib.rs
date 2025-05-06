@@ -307,6 +307,13 @@ fn derive_merge_inner(input: DeriveInput) -> Result<TokenStream> {
         }
     };
 
+    if let Fields::Unnamed(_) = struct_fields {
+        return Err(Error::new_spanned(
+            input,
+            "`#[derive(Merge)]` only works on named structs, not tuple structs",
+        ));
+    }
+
     let (partial_name, partial_meta) =
         partial_name_and_meta(&input).map(|(name, meta)| (name, meta.into_iter()))?;
 
@@ -414,7 +421,7 @@ fn merge_in_place(fields: &Fields) -> Result<TokenStream> {
         Merge,
     }
 
-    let merge_in_place = fields.iter().map(|field| {
+    let merge_in_place = fields.iter().map(|field| -> Result<_> {
         let mut strategy = MergeStrategy::default();
 
         for attr in field.attrs.iter() {
@@ -438,12 +445,10 @@ fn merge_in_place(fields: &Fields) -> Result<TokenStream> {
             }
         }
 
-        let Some(ref field_name) = field.ident else {
-            return Err(Error::new(
-                field.span(),
-                "`#[derive(Merge)]` does not support tuple `struct`s",
-            ));
-        };
+        let field_name = field
+            .ident
+            .as_ref()
+            .expect("previously verified that this is a named struct, not a tuple struct");
 
         let merge = match strategy {
             MergeStrategy::Overwrite => quote! {
