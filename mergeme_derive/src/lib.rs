@@ -232,7 +232,7 @@ use syn::{
 /// struct Config(bool, u8, Vec<String>);
 /// ```
 ///
-/// This macro requires the `#[partial(...)]` attribute on the struct itself.
+/// This macro requires a `#[partial(...)]` attribute on the struct itself.
 ///
 /// ```compile_fail
 /// # use mergeme_derive::Merge;
@@ -240,18 +240,6 @@ use syn::{
 /// #[derive(Merge)]
 /// // Missing `#[partial(...)]`.
 /// struct Config {
-///     name: String,
-///     dependencies: Vec<String>,
-/// }
-/// ```
-///
-/// ```compile_fail
-/// # use mergeme_derive::Merge;
-/// #
-/// #[derive(Merge)]
-/// struct Config {
-///     // This should annotate the struct, not a field.
-///     #[partial(PartialConfig)]
 ///     name: String,
 ///     dependencies: Vec<String>,
 /// }
