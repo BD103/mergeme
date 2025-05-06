@@ -336,8 +336,8 @@ fn partial_name_and_meta(input: &DeriveInput) -> Result<(Ident, Punctuated<Meta,
         if attr.path().is_ident("partial") {
             attr.parse_args_with(|input: ParseStream<'_>| {
                 if name.is_some() {
-                    return Err(Error::new(
-                        attr.span(),
+                    return Err(Error::new_spanned(
+                        attr,
                         "multiple `#[partial(...)]` attributes on the struct is disallowed",
                     ));
                 }
