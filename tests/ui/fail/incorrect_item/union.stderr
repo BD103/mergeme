@@ -1,5 +1,9 @@
 error: `#[derive(Merge)]` only works on structs, not unions
- --> tests/ui/fail/incorrect_item/union.rs:5:1
+ --> tests/ui/fail/incorrect_item/union.rs:4:1
   |
-5 | union Choice {
-  | ^^^^^
+4 | / #[partial(PartialChoice)]
+5 | | union Choice {
+6 | |     a: u32,
+7 | |     b: f32,
+8 | | }
+  | |_^

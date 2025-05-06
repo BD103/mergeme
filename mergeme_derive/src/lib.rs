@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
-    Data, DataEnum, DataUnion, DeriveInput, Error, Field, Fields, Meta, Result, Token,
+    Data, DeriveInput, Error, Field, Fields, Meta, Result, Token,
     parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
@@ -291,15 +291,15 @@ fn derive_merge_inner(input: DeriveInput) -> Result<TokenStream> {
 
     let struct_fields = match &input.data {
         Data::Struct(data_struct) => &data_struct.fields,
-        Data::Enum(DataEnum { enum_token, .. }) => {
-            return Err(Error::new(
-                enum_token.span,
+        Data::Enum(_) => {
+            return Err(Error::new_spanned(
+                input,
                 "`#[derive(Merge)]` only works on structs, not enums",
             ));
         }
-        Data::Union(DataUnion { union_token, .. }) => {
-            return Err(Error::new(
-                union_token.span,
+        Data::Union(_) => {
+            return Err(Error::new_spanned(
+                input,
                 "`#[derive(Merge)]` only works on structs, not unions",
             ));
         }
