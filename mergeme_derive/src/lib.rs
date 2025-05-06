@@ -232,13 +232,26 @@ use syn::{
 /// struct Config(bool, u8, Vec<String>);
 /// ```
 ///
-/// This macro requires a `#[partial(...)]` attribute on the struct itself.
+/// This macro requires a single `#[partial(...)]` attribute on the struct itself.
 ///
 /// ```compile_fail
 /// # use mergeme_derive::Merge;
 /// #
 /// #[derive(Merge)]
 /// // Missing `#[partial(...)]`.
+/// struct Config {
+///     name: String,
+///     dependencies: Vec<String>,
+/// }
+/// ```
+///
+/// ```compile_fail
+/// # use mergeme_derive::Merge;
+/// #
+/// #[derive(Merge)]
+/// // Too many `#[partial(...)]`s.
+/// #[partial(PartialConfig1)]
+/// #[partial(PartialConfig2)]
 /// struct Config {
 ///     name: String,
 ///     dependencies: Vec<String>,
@@ -269,6 +282,7 @@ pub fn derive_merge(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     }
 }
 
+/// The implementation of `#[derive(Merge)]`.
 fn derive_merge_inner(input: DeriveInput) -> Result<TokenStream> {
     let struct_name = &input.ident;
     let struct_vis = &input.vis;
@@ -321,6 +335,13 @@ fn partial_name_and_meta(input: &DeriveInput) -> Result<(Ident, Punctuated<Meta,
     for attr in input.attrs.iter() {
         if attr.path().is_ident("partial") {
             attr.parse_args_with(|input: ParseStream<'_>| {
+                if name.is_some() {
+                    return Err(Error::new(
+                        attr.span(),
+                        "multiple `#[partial(...)]` attributes on the struct is disallowed",
+                    ));
+                }
+
                 name = Some(input.parse()?);
 
                 if input.parse::<Token![,]>().is_ok() {

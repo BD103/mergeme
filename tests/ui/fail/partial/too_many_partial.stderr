@@ -1,0 +1,5 @@
+error: multiple `#[partial(...)]` attributes on the struct is disallowed
+ --> tests/ui/fail/partial/too_many_partial.rs:5:1
+  |
+5 | #[partial(PartialConfig2)]
+  | ^
