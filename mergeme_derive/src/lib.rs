@@ -1,3 +1,5 @@
+mod utils;
+
 use proc_macro2::{Ident, TokenStream};
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
@@ -356,7 +358,10 @@ fn partial_name_and_meta(input: &DeriveInput) -> Result<(Ident, Punctuated<Meta,
 
     match name {
         Some(name) => Ok((name, meta)),
-        None => Err(Error::new(input.span(), "expected `#[partial(...)]`")),
+        None => Err(Error::new_spanned(
+            utils::DeriveInputWithoutData(input),
+            "expected `#[partial(...)]`",
+        )),
     }
 }
 

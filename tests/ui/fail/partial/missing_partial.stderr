@@ -2,4 +2,4 @@ error: expected `#[partial(...)]`
  --> tests/ui/fail/partial/missing_partial.rs:5:1
   |
 5 | struct Config {
-  | ^^^^^^
+  | ^^^^^^^^^^^^^
